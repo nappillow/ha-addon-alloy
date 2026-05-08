@@ -13,6 +13,7 @@ This add-on replaces the deprecated Promtail add-on, which is incompatible with 
 ### Optional
 
 - **log_level**: Alloy log verbosity (`debug`, `info`, `warn`, `error`). Default: `info`
+- **tls_ca_file**: Path inside the add-on container to a PEM CA bundle, used to verify the TLS certificate of `loki_url` when it points at an HTTPS endpoint signed by an internal/private CA. Drop the bundle into the addon's mapped config dir (e.g. `/config/internal-ca.crt`) and set this to that path. When unset, Alloy uses the container's default trust store.
 - **additional_config**: Extra Alloy config blocks to append (advanced users)
 
 ## Labels

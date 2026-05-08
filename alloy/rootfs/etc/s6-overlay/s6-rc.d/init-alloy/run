@@ -10,7 +10,26 @@ mkdir -p "${CONFIG_DIR}" /data/alloy
 # Read options
 LOKI_URL=$(jq -r '.loki_url' "${OPTIONS_FILE}")
 LOG_LEVEL=$(jq -r '.log_level // "info"' "${OPTIONS_FILE}")
+TLS_CA_FILE=$(jq -r '.tls_ca_file // ""' "${OPTIONS_FILE}")
 ADDITIONAL_CONFIG=$(jq -r '.additional_config // ""' "${OPTIONS_FILE}")
+
+# Build the optional tls_config block. Set tls_ca_file to a CA bundle
+# path (e.g. /config/anima-ca.crt under the addon_config map) when
+# pushing to a Loki endpoint signed by an internal/private CA.
+TLS_CONFIG_BLOCK=""
+if [ -n "${TLS_CA_FILE}" ] && [ "${TLS_CA_FILE}" != "null" ]; then
+    if [ ! -f "${TLS_CA_FILE}" ]; then
+        echo "WARNING: tls_ca_file '${TLS_CA_FILE}' does not exist; ignoring." >&2
+    else
+        TLS_CONFIG_BLOCK=$(cat <<TLSBLOCK
+
+    tls_config {
+      ca_file = "${TLS_CA_FILE}"
+    }
+TLSBLOCK
+)
+    fi
+fi
 
 # Detect journal path
 JOURNAL_PATH="/var/log/journal"
@@ -23,6 +42,9 @@ echo " Grafana Alloy for Home Assistant"
 echo " Loki URL: ${LOKI_URL}"
 echo " Journal path: ${JOURNAL_PATH}"
 echo " Log level: ${LOG_LEVEL}"
+if [ -n "${TLS_CA_FILE}" ] && [ "${TLS_CA_FILE}" != "null" ]; then
+    echo " TLS CA file: ${TLS_CA_FILE}"
+fi
 echo "-----------------------------------------------------------"
 
 # Generate Alloy config
@@ -86,7 +108,7 @@ loki.process "journal" {
 // --- Write to Loki ---
 loki.write "loki" {
   endpoint {
-    url = "${LOKI_URL}"
+    url = "${LOKI_URL}"${TLS_CONFIG_BLOCK}
   }
 }
 ALLOYCONFIG

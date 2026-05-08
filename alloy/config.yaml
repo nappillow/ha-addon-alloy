@@ -28,6 +28,7 @@ options:
 schema:
   loki_url: url
   log_level: "list(debug|info|warn|error)"
+  tls_ca_file: "str?"
   additional_config: "str?"
 stage: experimental
 apparmor: false

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- `tls_ca_file` option for verifying HTTPS Loki endpoints signed by an internal/private CA, so users with self-hosted Loki behind cert-manager / a private root CA don't have to fall back to `insecure_skip_verify`.
+
 ## 1.0.0 - 2026-02-21
 
 ### Added
